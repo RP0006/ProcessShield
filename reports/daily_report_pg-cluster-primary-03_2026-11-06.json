@@ -1,0 +1,22 @@
+{
+  "node_id": "pg-cluster-primary-03 (192.168.1.103 (SIMULATED))",
+  "hostname": "pg-cluster-primary-03",
+  "report_date": "2026-11-06",
+  "is_simulated": true,
+  "samples_collected": 9,
+  "uptime_percent": 100.0,
+  "alerts_count": 1,
+  "cpu": {
+    "avg": 59.6,
+    "max": 63.4
+  },
+  "ram": {
+    "avg": 86.3,
+    "max": 87.3
+  },
+  "disk": {
+    "avg": 89.0,
+    "max": 89.1
+  },
+  "generated_at": 1793957467.156565
+}

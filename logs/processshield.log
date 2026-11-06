@@ -1,0 +1,50 @@
+[2026-09-14 21:19:17] INFO: ProcessShield: Application session started
+[2026-09-14 21:19:17] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:19:33] INFO: ProcessShield: Application session started
+[2026-09-14 21:19:33] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:21:11] INFO: ProcessShield: Application session started
+[2026-09-14 21:21:11] WARNING: [CPU Monitor] High CPU usage detected: cpu_stre (PID 2801) using 97.3% (Threshold: 70.0%) (PID: 2801, CPU: 97.3%, Threshold: 70.0%)
+[2026-09-14 21:21:11] WARNING: [CPU Monitor] High CPU usage detected: cpu_stre (PID 2810) using 96.7% (Threshold: 70.0%) (PID: 2810, CPU: 96.7%, Threshold: 70.0%)
+[2026-09-14 21:21:11] WARNING: [CPU Monitor] High CPU usage detected: cpu_stre (PID 2814) using 97.3% (Threshold: 70.0%) (PID: 2814, CPU: 97.3%, Threshold: 70.0%)
+[2026-09-14 21:21:11] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:21:22] INFO: ProcessShield: Application session started
+[2026-09-14 21:21:22] INFO: ProcessController: Successfully executed TERMINATE (SIGTERM) on PID 2801
+[2026-09-14 21:21:22] INFO: [Process Controller] Successfully executed TERMINATE (SIGTERM) on PID 2801 (Signal: 15)
+[2026-09-14 21:21:22] INFO: ProcessController: Successfully executed TERMINATE (SIGTERM) on PID 2810
+[2026-09-14 21:21:22] INFO: [Process Controller] Successfully executed TERMINATE (SIGTERM) on PID 2810 (Signal: 15)
+[2026-09-14 21:21:22] INFO: ProcessController: Successfully executed TERMINATE (SIGTERM) on PID 2814
+[2026-09-14 21:21:22] INFO: [Process Controller] Successfully executed TERMINATE (SIGTERM) on PID 2814 (Signal: 15)
+[2026-09-14 21:21:22] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:22:05] INFO: ProcessShield: Application session started
+[2026-09-14 21:22:05] WARNING: [Memory Monitor] High Memory usage detected: Wh (PID 1041) using 538.2 MB (Threshold: 500.0 MB) (PID: 1041, Memory: 538.2 MB, Threshold: 500.0 MB)
+[2026-09-14 21:22:05] WARNING: [Memory Monitor] High Memory usage detected: Br (PID 1115) using 1644.0 MB (Threshold: 500.0 MB) (PID: 1115, Memory: 1644.0 MB, Threshold: 500.0 MB)
+[2026-09-14 21:22:05] WARNING: [Memory Monitor] High Memory usage detected: Br (PID 1122) using 667.0 MB (Threshold: 500.0 MB) (PID: 1122, Memory: 667.0 MB, Threshold: 500.0 MB)
+[2026-09-14 21:22:05] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:23:33] INFO: ProcessShield: Application session started
+[2026-09-14 21:23:33] WARNING: [Memory Monitor] High Memory usage detected: Wh (PID 1041) using 525.0 MB (Threshold: 500.0 MB) (PID: 1041, Memory: 525.0 MB, Threshold: 500.0 MB)
+[2026-09-14 21:23:33] WARNING: [Memory Monitor] High Memory usage detected: Br (PID 1115) using 1643.8 MB (Threshold: 500.0 MB) (PID: 1115, Memory: 1643.8 MB, Threshold: 500.0 MB)
+[2026-09-14 21:23:33] WARNING: [Memory Monitor] High Memory usage detected: Br (PID 1122) using 667.0 MB (Threshold: 500.0 MB) (PID: 1122, Memory: 667.0 MB, Threshold: 500.0 MB)
+[2026-09-14 21:23:33] WARNING: [Memory Monitor] High Memory usage detected: memory_t (PID 2896) using 601.4 MB (Threshold: 500.0 MB) (PID: 2896, Memory: 601.4 MB, Threshold: 500.0 MB)
+[2026-09-14 21:23:33] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:23:43] INFO: ProcessShield: Application session started
+[2026-09-14 21:23:44] INFO: ProcessController: Successfully executed TERMINATE (SIGTERM) on PID 2896
+[2026-09-14 21:23:44] INFO: [Process Controller] Successfully executed TERMINATE (SIGTERM) on PID 2896 (Signal: 15)
+[2026-09-14 21:23:44] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:23:59] INFO: ProcessShield: Application session started
+[2026-09-14 21:23:59] CRITICAL: [Deadlock Simulator] Deadlock detected in simulated environment! Cycle: P1 -> P2 -> P1 (Processes: P1, P2 | Resources: R1, R2)
+[2026-09-14 21:23:59] CRITICAL: [Deadlock Simulator] Deadlock detected in simulated environment! Cycle: P1 -> P2 -> P3 -> P1 (Processes: P1, P2, P3 | Resources: R1, R2, R3)
+[2026-09-14 21:23:59] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:24:08] INFO: ProcessShield: Application session started
+[2026-09-14 21:24:08] WARNING: [Banker's Algorithm] Banker's Algorithm: System entered UNSAFE state (Deadlock Risk). 4 process(es) cannot complete. (Blocked processes: P0, P1, P2, P3)
+[2026-09-14 21:24:08] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:24:26] INFO: ProcessShield: Application session started
+[2026-09-14 21:24:26] INFO: Configuration: CPU threshold updated to 85.000000%
+[2026-09-14 21:24:26] INFO: ProcessShield: Application session terminated cleanly
+[2026-09-14 21:27:46] INFO: ProcessShield: Application session started
+[2026-09-14 21:43:37] CRITICAL: [Deadlock Simulator] Deadlock detected in simulated environment! Cycle: P1 -> P2 -> P3 -> P1 (Processes: P1, P2, P3 | Resources: R1, R2, R3)
+[2026-09-14 21:44:21] INFO: ProcessShield: Application session started
+[2026-09-14 21:44:38] WARNING: [Memory Monitor] High Memory usage detected: Br (PID 1122) using 720.4 MB (Threshold: 500.0 MB) (PID: 1122, Memory: 720.4 MB, Threshold: 500.0 MB)
+[2026-09-14 21:44:38] WARNING: [Memory Monitor] High Memory usage detected: An (PID 2167) using 526.5 MB (Threshold: 500.0 MB) (PID: 2167, Memory: 526.5 MB, Threshold: 500.0 MB)
+[2026-09-14 22:22:52] INFO: Configuration: CPU threshold updated to 85.000000%
+[2026-09-15 09:42:57] INFO: ProcessShield: Application session started
+[2026-09-15 13:26:51] INFO: ProcessShield: Application session started

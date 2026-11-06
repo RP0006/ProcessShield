@@ -1,0 +1,22 @@
+{
+  "node_id": "Rohits-MacBook-Pro (192.168.1.50)",
+  "hostname": "Rohits-MacBook-Pro",
+  "report_date": "2026-11-06",
+  "is_simulated": false,
+  "samples_collected": 2,
+  "uptime_percent": 100.0,
+  "alerts_count": 0,
+  "cpu": {
+    "avg": 24.5,
+    "max": 24.5
+  },
+  "ram": {
+    "avg": 77.5,
+    "max": 77.5
+  },
+  "disk": {
+    "avg": 36.0,
+    "max": 36.0
+  },
+  "generated_at": 1793957467.1546361
+}

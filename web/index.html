@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProcessShield — Automated Distributed OS Guardian</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --bg-surface: #0f1523;
+            --bg-card: rgba(18, 24, 40, 0.75);
+            --bg-card-hover: rgba(25, 34, 56, 0.9);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-focus: rgba(99, 102, 241, 0.5);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --real-accent: #10b981;
+            --real-glow: rgba(16, 185, 129, 0.25);
+            --sim-accent: #8b5cf6;
+            --sim-glow: rgba(139, 92, 246, 0.25);
+            
+            --status-healthy: #10b981;
+            --status-warning: #f59e0b;
+            --status-critical: #ef4444;
+            --status-offline: #64748b;
+            
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 24px;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* Top Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-shield {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+        }
+
+        .brand-text h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-master {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            letter-spacing: 0.5px;
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .server-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-subtle);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 9px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Top Navigation Tabs (Fleet vs Automation Status vs Reports) */
+        .main-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 12px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .nav-btn.active {
+            color: #fff;
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Views */
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--card-accent, #6366f1);
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .stat-card .value {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+
+        .stat-card .subtext {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Controls / Filter Bar */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* Nodes Grid */
+        .nodes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+            gap: 20px;
+        }
+
+        .node-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 22px;
+            transition: all 0.25s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .node-card:hover {
+            transform: translateY(-2px);
+            background: var(--bg-card-hover);
+        }
+
+        .node-card.is-real {
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+        .node-card.is-real::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+
+        .node-card.is-simulated {
+            border-color: rgba(139, 92, 246, 0.35);
+        }
+        .node-card.is-simulated::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+
+        .node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .node-name {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .node-ip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .badge-real {
+            background: rgba(16, 185, 129, 0.18);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .badge-sim {
+            background: rgba(139, 92, 246, 0.18);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.4);
+        }
+
+        .health-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .health-pill.healthy {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .health-pill.warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .health-pill.critical {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .health-pill.offline {
+            background: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+            border: 1px solid rgba(100, 116, 139, 0.4);
+        }
+
+        .metrics-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .metric-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .metric-header .val {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .progress-track {
+            height: 7px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        .bar-normal { background: #10b981; }
+        .bar-warn   { background: #f59e0b; }
+        .bar-crit   { background: #ef4444; }
+
+        .node-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 14px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .procs-tag {
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #101524;
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            width: 100%;
+            max-width: 960px;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .modal-title h2 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .modal-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 4px;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #fff; }
+
+        .modal-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 12px 24px 0 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .modal-tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-tab-btn.active {
+            color: #fff;
+            border-bottom-color: var(--primary);
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .health-reasons-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .health-reasons-box ul {
+            list-style: none;
+            margin-top: 6px;
+        }
+
+        .health-reasons-box li {
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .table-container {
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+            text-align: left;
+            padding: 10px 14px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .state-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .state-RUNNING { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .state-SLEEPING { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+        .state-STOPPED { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .state-ZOMBIE { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .state-IDLE { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+
+        .cat-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .cat-app { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+        .cat-daemon { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+
+        /* Automation Status Card Grid */
+        .auto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .auto-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auto-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auto-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auto-card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .auto-metric-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .code-box {
+            background: #0f172a;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #38bdf8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            white-space: pre;
+            margin-top: 8px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            grid-column: 1 / -1;
+            padding: 48px;
+            text-align: center;
+            background: var(--bg-card);
+            border: 1px dashed var(--border-subtle);
+            border-radius: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navigation -->
+        <header>
+            <div class="brand">
+                <div class="logo-shield">🛡️</div>
+                <div class="brand-text">
+                    <h1>ProcessShield <span class="badge-master">Automated Fleet Guardian</span></h1>
+                    <p id="master-info">Connecting to Master Server...</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="server-pill">
+                    <span class="pulse-dot"></span>
+                    <span id="live-indicator">AUTO-POLLING 5s</span>
+                </div>
+                <button class="btn btn-secondary" id="btn-toggle-sim" onclick="toggleSimulationFleet()">
+                    ⚡ Toggle Simulated Fleet
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Navigation Bar -->
+        <nav class="main-nav">
+            <button class="nav-btn active" id="tab-nav-fleet" onclick="switchView('fleet')">🖥️ Fleet Overview</button>
+            <button class="nav-btn" id="tab-nav-automation" onclick="switchView('automation')">🤖 Automation Status</button>
+            <button class="nav-btn" id="tab-nav-reports" onclick="switchView('reports')">📋 Daily Reports</button>
+        </nav>
+
+        <!-- VIEW 1: FLEET OVERVIEW -->
+        <div id="view-fleet" class="view-section active">
+            <!-- Fleet Overview Metric Cards -->
+            <div class="stats-grid">
+                <div class="stat-card" style="--card-accent: #6366f1;">
+                    <div class="label">Total Computers</div>
+                    <div class="value" id="stat-total-nodes">0</div>
+                    <div class="subtext"><span id="stat-online-nodes">0</span> Online / <span id="stat-offline-nodes">0</span> Offline</div>
+                </div>
+
+                <div class="stat-card" style="--card-accent: #10b981;">
+                    <div class="label">Real Machines</div>
+                    <div class="value" id="stat-real-nodes">0</div>
+                    <div class="subtext">Physical Ethernet & LAN computers</div>
+                </div>
+
+                <div class="stat-card" style="--card-accent: #8b5cf6;">
+                    <div class="label">Simulated Nodes</div>
+                    <div class="value" id="stat-sim-nodes">0</div>
+                    <div class="subtext">Virtual test machines</div>
+                </div>
+
+                <div class="stat-card" style="--card-accent: #f59e0b;">
+                    <div class="label">System Health Alerts</div>
+                    <div class="value" id="stat-alerts">0</div>
+                    <div class="subtext"><span id="stat-warn-count">0</span> Warning / <span id="stat-crit-count">0</span> Critical</div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs & Controls -->
+            <div class="controls-bar">
+                <div class="tab-group">
+                    <button class="tab-btn active" onclick="setFilter('all')">All Nodes (<span id="count-tab-all">0</span>)</button>
+                    <button class="tab-btn" onclick="setFilter('real')">🖥️ Real Machines (<span id="count-tab-real">0</span>)</button>
+                    <button class="tab-btn" onclick="setFilter('simulated')">🧪 Simulated (<span id="count-tab-sim">0</span>)</button>
+                    <button class="tab-btn" onclick="setFilter('alerts')">⚠️ Alerts (<span id="count-tab-alerts">0</span>)</button>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span> Healthy</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> Warning</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span> Critical</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:#64748b;"></span> Offline</div>
+                </div>
+            </div>
+
+            <!-- Grid of Connected Computers -->
+            <div class="nodes-grid" id="nodes-container">
+                <div class="empty-state">
+                    <h3>Waiting for ProcessShield Agents...</h3>
+                    <p>Run the Agent on your Mac or start the simulation mode to begin monitoring computers.</p>
+                    <div class="code-box">python3 agent.py</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: AUTOMATION STATUS -->
+        <div id="view-automation" class="view-section">
+            <div class="auto-grid">
+                <!-- 1. Master Server Daemon -->
+                <div class="auto-card">
+                    <div class="auto-card-header">
+                        <div class="auto-card-title">🛡️ Master Server Service</div>
+                        <span class="health-pill healthy" id="auto-srv-status">RUNNING</span>
+                    </div>
+                    <p class="auto-card-desc">HTTP/1.1 threaded telemetry collector listening on all interfaces for authorized agents.</p>
+                    <div class="auto-metric-box" id="auto-srv-box">
+                        <div>Port: 8080 | Bind: 0.0.0.0 (LAN)</div>
+                        <div>Uptime: Loading...</div>
+                    </div>
+                </div>
+
+                <!-- 2. UDP Discovery Engine -->
+                <div class="auto-card">
+                    <div class="auto-card-header">
+                        <div class="auto-card-title">📡 Network Auto-Discovery</div>
+                        <span class="health-pill healthy" id="auto-disc-status">ACTIVE</span>
+                    </div>
+                    <p class="auto-card-desc">Broadcasts UDP beacon on port 8081 allowing new client computers on Ethernet switch to connect with zero manual configuration.</p>
+                    <div class="auto-metric-box" id="auto-disc-box">
+                        <div>UDP Port: 8081 | Beacon: Every 4s</div>
+                        <div>Auto-Handshake: Supported</div>
+                    </div>
+                </div>
+
+                <!-- 3. SQLite Database -->
+                <div class="auto-card">
+                    <div class="auto-card-header">
+                        <div class="auto-card-title">💾 Persistent Database</div>
+                        <span class="health-pill healthy" id="auto-db-status">ACTIVE</span>
+                    </div>
+                    <p class="auto-card-desc">Persistent SQLite3 engine with Write-Ahead Logging (WAL) storing telemetry history, alerts, and node registrations.</p>
+                    <div class="auto-metric-box" id="auto-db-box">
+                        <div>Database: data/processshield.db</div>
+                        <div>Records: Loading...</div>
+                    </div>
+                </div>
+
+                <!-- 4. Disconnection & Heartbeat -->
+                <div class="auto-card">
+                    <div class="auto-card-header">
+                        <div class="auto-card-title">⏱️ Offline Detection</div>
+                        <span class="health-pill healthy">ACTIVE</span>
+                    </div>
+                    <p class="auto-card-desc">Continuously monitors heartbeats. If a computer drops off the Ethernet switch for &gt; 15 seconds, its status is updated to OFFLINE.</p>
+                    <div class="auto-metric-box">
+                        <div>Heartbeat Cadence: 5 seconds</div>
+                        <div>Offline Threshold: 15 seconds (3 missed cycles)</div>
+                    </div>
+                </div>
+
+                <!-- 5. Daily Reporting -->
+                <div class="auto-card">
+                    <div class="auto-card-header">
+                        <div class="auto-card-title">📋 Automated Daily Reports</div>
+                        <span class="health-pill healthy">SCHEDULED</span>
+                    </div>
+                    <p class="auto-card-desc">Aggregates CPU, RAM, disk, uptime, and incidents into formal reports daily at midnight.</p>
+                    <div class="auto-metric-box">
+                        <div>Schedule: Daily at 00:00:00</div>
+                        <div style="margin-top:6px;">
+                            <button class="btn btn-primary" style="padding:4px 10px; font-size:11px;" onclick="triggerDailyReportGeneration()">
+                                ⚡ Generate Daily Report Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Data Retention & Pruning -->
+                <div class="auto-card">
+                    <div class="auto-card-header">
+                        <div class="auto-card-title">🧹 Auto Data Pruner</div>
+                        <span class="health-pill healthy">PROTECTED</span>
+                    </div>
+                    <p class="auto-card-desc">Prevents disk exhaustion by automatically pruning raw 5-second samples older than 7 days while preserving daily reports forever.</p>
+                    <div class="auto-metric-box">
+                        <div>Raw Telemetry Retention: 7 Days</div>
+                        <div>Daily Summary Retention: Indefinite</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Reboot Autostart Guide -->
+            <div class="auto-card" style="margin-top: 10px;">
+                <div class="auto-card-title">🔄 Automatic Service Startup on Reboot (macOS &amp; Linux)</div>
+                <p class="auto-card-desc">To run Master Server or Agents automatically as a background system daemon that restarts across reboots without logging in, run:</p>
+                
+                <div style="margin-top: 10px;">
+                    <strong style="font-size: 13px; color: #38bdf8;">macOS (LaunchAgent service):</strong>
+                    <div class="code-box">./scripts/install_macos_service.sh master   # Installs Master Server daemon
+./scripts/install_macos_service.sh agent    # Installs Client Agent daemon</div>
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <strong style="font-size: 13px; color: #34d399;">Linux (Systemd service):</strong>
+                    <div class="code-box">sudo ./scripts/install_linux_service.sh master # Installs Master Server systemd service
+sudo ./scripts/install_linux_service.sh agent  # Installs Client Agent systemd service</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: DAILY REPORTS -->
+        <div id="view-reports" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                <div>
+                    <h2 style="font-size: 18px; font-weight: 700;">Monitored Computers Daily Reports</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary);">Historical summaries of resource utilization, peak loads, uptime, and alerts per computer.</p>
+                </div>
+                <button class="btn btn-primary" onclick="triggerDailyReportGeneration()">
+                    ⚡ Generate Daily Report Now
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>DATE</th>
+                            <th>HOSTNAME</th>
+                            <th>TYPE</th>
+                            <th>AVG CPU</th>
+                            <th>PEAK CPU</th>
+                            <th>AVG RAM</th>
+                            <th>PEAK RAM</th>
+                            <th>STORAGE</th>
+                            <th>UPTIME</th>
+                            <th>ALERTS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="daily-reports-tbody">
+                        <tr><td colspan="10" style="text-align:center; padding: 24px;">No daily reports generated yet. Click "Generate Daily Report Now".</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Node Details, Processes & 24h History Modal -->
+    <div class="modal-overlay" id="process-modal" onclick="closeModalOnOverlay(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h2 id="modal-node-title">Computer Details</h2>
+                    <p id="modal-node-subtitle">IP &amp; OS</p>
+                </div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+
+            <div class="modal-tabs">
+                <button class="modal-tab-btn active" id="modal-tab-procs" onclick="switchModalTab('processes')">⚙️ Running Processes</button>
+                <button class="modal-tab-btn" id="modal-tab-hist" onclick="switchModalTab('history')">📈 24-Hour Telemetry History</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Health Assessment -->
+                <div class="health-reasons-box" id="modal-health-box">
+                    <strong>Health Assessment:</strong>
+                    <ul id="modal-health-reasons"></ul>
+                </div>
+
+                <!-- Tab Content 1: Processes -->
+                <div id="modal-view-procs">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                        <h3 style="font-size: 13px; font-weight: 700;">Active Processes (<span id="modal-proc-count">0</span>)</h3>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="filterModalProcs('all')">All</button>
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="filterModalProcs('app')">User Apps</button>
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="filterModalProcs('daemon')">Background</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>PPID</th>
+                                    <th>NAME</th>
+                                    <th>USER</th>
+                                    <th>CATEGORY</th>
+                                    <th>STATE</th>
+                                    <th>CPU %</th>
+                                    <th>MEMORY</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-proc-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab Content 2: History -->
+                <div id="modal-view-hist" style="display:none;">
+                    <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Persistent Telemetry History (Last 24 Hours)</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>TIME</th>
+                                    <th>CPU %</th>
+                                    <th>RAM %</th>
+                                    <th>DISK %</th>
+                                    <th>PROCS</th>
+                                    <th>NET SENT</th>
+                                    <th>NET RECV</th>
+                                    <th>HEALTH</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-hist-table-body">
+                                <tr><td colspan="8" style="text-align:center;">Loading historical telemetry from SQLite database...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilter = 'all';
+        let nodesData = {};
+        let activeModalNodeId = null;
+        let activeModalTab = 'processes';
+        let modalProcsFilter = 'all';
+
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+            if (viewName === 'fleet') {
+                document.getElementById('view-fleet').classList.add('active');
+                document.getElementById('tab-nav-fleet').classList.add('active');
+            } else if (viewName === 'automation') {
+                document.getElementById('view-automation').classList.add('active');
+                document.getElementById('tab-nav-automation').classList.add('active');
+                fetchAutomationStatus();
+            } else if (viewName === 'reports') {
+                document.getElementById('view-reports').classList.add('active');
+                document.getElementById('tab-nav-reports').classList.add('active');
+                fetchDailyReports();
+            }
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderNodes();
+        }
+
+        async function fetchFleetData() {
+            try {
+                const res = await fetch('/api/nodes');
+                if (!res.ok) return;
+                const data = await res.json();
+                nodesData = data.nodes || {};
+                
+                updateOverviewStats(data.summary || {});
+                renderNodes();
+
+                if (activeModalNodeId && nodesData[activeModalNodeId]) {
+                    updateModalContent(nodesData[activeModalNodeId]);
+                }
+            } catch (err) {
+                console.error("Error polling fleet data:", err);
+            }
+        }
+
+        async function fetchServerStatus() {
+            try {
+                const res = await fetch('/api/status');
+                if (!res.ok) return;
+                const status = await res.json();
+                const ethTag = status.ethernet_ip ? `Ethernet IP: ${status.ethernet_ip} | ` : '';
+                document.getElementById('master-info').textContent = 
+                    `${ethTag}Primary LAN: ${status.lan_ip}:${status.port} (${status.primary_type}) | Port: ${status.port}`;
+            } catch (err) {}
+        }
+
+        async function fetchAutomationStatus() {
+            try {
+                const res = await fetch('/api/automation/status');
+                if (!res.ok) return;
+                const auto = await res.json();
+
+                // Master
+                document.getElementById('auto-srv-status').textContent = auto.master_service.status;
+                document.getElementById('auto-srv-box').innerHTML = `
+                    <div>Port: ${auto.master_service.port} | Started: ${auto.master_service.started_at}</div>
+                    <div>Uptime: ${Math.floor(auto.master_service.uptime_seconds / 60)} mins (${auto.master_service.uptime_seconds}s)</div>
+                `;
+
+                // Discovery
+                document.getElementById('auto-disc-status').textContent = auto.network_discovery.status;
+                document.getElementById('auto-disc-box').innerHTML = `
+                    <div>UDP Port: ${auto.network_discovery.discovery_port} | Primary: ${auto.network_discovery.primary_ip}</div>
+                    <div>Interface: ${auto.network_discovery.interface} (Auto-Beacon Active)</div>
+                `;
+
+                // Database
+                document.getElementById('auto-db-status').textContent = auto.database_storage.status;
+                document.getElementById('auto-db-box').innerHTML = `
+                    <div>Engine: ${auto.database_storage.engine} (${auto.database_storage.size_mb} MB)</div>
+                    <div>Telemetry Samples: ${auto.database_storage.total_telemetry_samples} (Retention: ${auto.database_storage.retention_policy_days}d)</div>
+                `;
+            } catch (err) {
+                console.error("Error fetching automation status:", err);
+            }
+        }
+
+        async function fetchDailyReports() {
+            try {
+                const res = await fetch('/api/reports');
+                if (!res.ok) return;
+                const data = await res.json();
+                const tbody = document.getElementById('daily-reports-tbody');
+                const reports = data.reports || [];
+
+                if (reports.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 24px;">No daily reports generated yet. Click "Generate Daily Report Now".</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = reports.map(r => `
+                    <tr>
+                        <td><strong>${r.report_date}</strong></td>
+                        <td>${r.hostname}</td>
+                        <td>${r.is_simulated ? '<span class="badge badge-sim">SIMULATED</span>' : '<span class="badge badge-real">REAL</span>'}</td>
+                        <td>${(r.avg_cpu || 0).toFixed(1)}%</td>
+                        <td><strong style="color:#f59e0b;">${(r.max_cpu || 0).toFixed(1)}%</strong></td>
+                        <td>${(r.avg_ram || 0).toFixed(1)}%</td>
+                        <td>${(r.max_ram || 0).toFixed(1)}%</td>
+                        <td>${(r.avg_disk || 0).toFixed(1)}%</td>
+                        <td><span style="color:#10b981;">${r.uptime_percent || 100}%</span></td>
+                        <td>${r.alerts_count > 0 ? `<span style="color:#ef4444; font-weight:700;">${r.alerts_count}</span>` : '0'}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("Error fetching reports:", err);
+            }
+        }
+
+        async function triggerDailyReportGeneration() {
+            try {
+                const res = await fetch('/api/reports/generate', { method: 'POST' });
+                const json = await res.json();
+                alert(`Generated ${json.generated_count || 0} daily reports successfully!`);
+                fetchDailyReports();
+            } catch (err) {
+                alert("Failed to generate daily reports: " + err);
+            }
+        }
+
+        function updateOverviewStats(summary) {
+            document.getElementById('stat-total-nodes').textContent = summary.total_nodes || 0;
+            document.getElementById('stat-online-nodes').textContent = summary.online_nodes || 0;
+            document.getElementById('stat-offline-nodes').textContent = summary.offline_nodes || 0;
+            document.getElementById('stat-real-nodes').textContent = summary.real_nodes || 0;
+            document.getElementById('stat-sim-nodes').textContent = summary.sim_nodes || 0;
+            document.getElementById('stat-alerts').textContent = (summary.warning_nodes || 0) + (summary.critical_nodes || 0);
+            document.getElementById('stat-warn-count').textContent = summary.warning_nodes || 0;
+            document.getElementById('stat-crit-count').textContent = summary.critical_nodes || 0;
+
+            document.getElementById('count-tab-all').textContent = summary.total_nodes || 0;
+            document.getElementById('count-tab-real').textContent = summary.real_nodes || 0;
+            document.getElementById('count-tab-sim').textContent = summary.sim_nodes || 0;
+            document.getElementById('count-tab-alerts').textContent = (summary.warning_nodes || 0) + (summary.critical_nodes || 0);
+        }
+
+        function getProgressBarClass(pct) {
+            if (pct >= 85) return 'bar-crit';
+            if (pct >= 70) return 'bar-warn';
+            return 'bar-normal';
+        }
+
+        function renderNodes() {
+            const container = document.getElementById('nodes-container');
+            const nodesList = Object.values(nodesData);
+
+            let filtered = nodesList.filter(n => {
+                if (currentFilter === 'real') return !n.is_simulated;
+                if (currentFilter === 'simulated') return n.is_simulated;
+                if (currentFilter === 'alerts') return n.health === 'WARNING' || n.health === 'CRITICAL';
+                return true;
+            });
+
+            filtered.sort((a, b) => {
+                if (a.is_simulated !== b.is_simulated) {
+                    return a.is_simulated ? 1 : -1;
+                }
+                return a.hostname.localeCompare(b.hostname);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Computers Match Filter (${currentFilter.toUpperCase()})</h3>
+                        <p>Launch the Automated Agent on client computers or toggle simulation.</p>
+                        <div class="code-box">python3 agent.py</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(node => {
+                const isReal = !node.is_simulated;
+                const isOffline = (node.status === 'OFFLINE');
+                const statusClass = isOffline ? 'offline' : (node.health || 'healthy').toLowerCase();
+                const healthLabel = isOffline ? 
+                    `OFFLINE (${node.seconds_since_seen ? Math.round(node.seconds_since_seen) + 's' : 'DISCONNECTED'})` : 
+                    (node.health || 'HEALTHY');
+
+                const cpuClass = getProgressBarClass(node.cpu_percent || 0);
+                const ramClass = getProgressBarClass(node.ram_percent || 0);
+                const diskClass = getProgressBarClass(node.disk_percent || 0);
+
+                const ifaceStr = node.interface ? ` [${node.interface}]` : '';
+
+                return `
+                    <div class="node-card ${isReal ? 'is-real' : 'is-simulated'}">
+                        <div class="node-header">
+                            <div class="node-title-group">
+                                <div class="node-name">
+                                    ${node.hostname}
+                                    ${isReal ? 
+                                        '<span class="badge badge-real">★ REAL SYSTEM</span>' : 
+                                        '<span class="badge badge-sim">SIMULATED VM</span>'}
+                                </div>
+                                <div class="node-ip">
+                                    <span>🌐 IP: <strong>${node.ip}</strong>${ifaceStr}</span>
+                                    ${node.mac ? `<span>Hardware MAC: ${node.mac}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="health-pill ${statusClass}">
+                                <span class="legend-dot" style="background: currentColor;"></span>
+                                ${healthLabel}
+                            </div>
+                        </div>
+
+                        <div class="metrics-stack">
+                            <!-- CPU -->
+                            <div class="metric-row">
+                                <div class="metric-header">
+                                    <span>CPU Utilization</span>
+                                    <span class="val">${(node.cpu_percent || 0).toFixed(1)}%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill ${cpuClass}" style="width: ${Math.min(100, node.cpu_percent || 0)}%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- RAM -->
+                            <div class="metric-row">
+                                <div class="metric-header">
+                                    <span>RAM (${(node.ram_used_gb || 0).toFixed(1)} / ${(node.ram_total_gb || 0).toFixed(1)} GB)</span>
+                                    <span class="val">${(node.ram_percent || 0).toFixed(1)}%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill ${ramClass}" style="width: ${Math.min(100, node.ram_percent || 0)}%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Disk -->
+                            <div class="metric-row">
+                                <div class="metric-header">
+                                    <span>Storage (${(node.disk_used_gb || 0).toFixed(1)} / ${(node.disk_total_gb || 0).toFixed(1)} GB)</span>
+                                    <span class="val">${(node.disk_percent || 0).toFixed(1)}%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill ${diskClass}" style="width: ${Math.min(100, node.disk_percent || 0)}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="node-footer">
+                            <div class="procs-tag">
+                                ⚙️ ${node.process_count || (node.processes ? node.processes.length : 0)} processes
+                                ${node.net_sent_kb ? ` | ↕ ${(node.net_sent_kb / 1024).toFixed(0)}MB` : ''}
+                            </div>
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="openNodeModal('${escapeId(node.node_id)}')">
+                                Inspect Processes &amp; History &rarr;
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeId(id) {
+            return encodeURIComponent(id);
+        }
+
+        function openNodeModal(encodedId) {
+            const nodeId = decodeURIComponent(encodedId);
+            const node = nodesData[nodeId];
+            if (!node) return;
+            activeModalNodeId = nodeId;
+            updateModalContent(node);
+            fetchNodeHistory(nodeId);
+            document.getElementById('process-modal').classList.add('active');
+        }
+
+        function switchModalTab(tab) {
+            activeModalTab = tab;
+            if (tab === 'processes') {
+                document.getElementById('modal-tab-procs').classList.add('active');
+                document.getElementById('modal-tab-hist').classList.remove('active');
+                document.getElementById('modal-view-procs').style.display = 'block';
+                document.getElementById('modal-view-hist').style.display = 'none';
+            } else {
+                document.getElementById('modal-tab-hist').classList.add('active');
+                document.getElementById('modal-tab-procs').classList.remove('active');
+                document.getElementById('modal-view-procs').style.display = 'none';
+                document.getElementById('modal-view-hist').style.display = 'block';
+                if (activeModalNodeId) {
+                    fetchNodeHistory(activeModalNodeId);
+                }
+            }
+        }
+
+        function filterModalProcs(cat) {
+            modalProcsFilter = cat;
+            if (activeModalNodeId && nodesData[activeModalNodeId]) {
+                updateModalContent(nodesData[activeModalNodeId]);
+            }
+        }
+
+        async function fetchNodeHistory(nodeId) {
+            try {
+                const res = await fetch(`/api/history?node_id=${encodeURIComponent(nodeId)}&hours=24`);
+                if (!res.ok) return;
+                const json = await res.json();
+                const tbody = document.getElementById('modal-hist-table-body');
+                const history = json.history || [];
+
+                if (history.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No historical records found for this computer yet.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = history.slice().reverse().map(h => `
+                    <tr>
+                        <td><strong>${h.time_str.split(' ')[1] || h.time_str}</strong></td>
+                        <td>${(h.cpu_percent || 0).toFixed(1)}%</td>
+                        <td>${(h.ram_percent || 0).toFixed(1)}%</td>
+                        <td>${(h.disk_percent || 0).toFixed(1)}%</td>
+                        <td>${h.process_count || 0}</td>
+                        <td>${(h.net_sent_kb || 0).toFixed(0)} KB</td>
+                        <td>${(h.net_recv_kb || 0).toFixed(0)} KB</td>
+                        <td><span class="state-badge ${h.health === 'HEALTHY' ? 'state-RUNNING' : 'state-STOPPED'}">${h.health}</span></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("Error fetching node history:", err);
+            }
+        }
+
+        function updateModalContent(node) {
+            const isOffline = (node.status === 'OFFLINE');
+            document.getElementById('modal-node-title').innerHTML = `
+                ${node.hostname} 
+                ${!node.is_simulated ? 
+                    '<span class="badge badge-real" style="margin-left:8px;">★ REAL SYSTEM</span>' : 
+                    '<span class="badge badge-sim" style="margin-left:8px;">SIMULATED VM</span>'}
+                ${isOffline ? '<span class="badge" style="background:#64748b; margin-left:8px;">OFFLINE</span>' : ''}
+            `;
+            document.getElementById('modal-node-subtitle').textContent = 
+                `IP: ${node.ip} | OS: ${node.system_type || 'macOS'} | Last Heartbeat: ${node.last_seen_time || 'N/A'}`;
+
+            const reasonsList = document.getElementById('modal-health-reasons');
+            if (node.health_reasons && node.health_reasons.length > 0) {
+                reasonsList.innerHTML = node.health_reasons.map(r => `<li>• ${r}</li>`).join('');
+            } else {
+                reasonsList.innerHTML = '<li>• All metrics optimal.</li>';
+            }
+
+            const procs = node.processes || [];
+            let filteredProcs = procs.filter(p => {
+                if (modalProcsFilter === 'app') return p.is_user_app;
+                if (modalProcsFilter === 'daemon') return !p.is_user_app;
+                return true;
+            });
+
+            document.getElementById('modal-proc-count').textContent = `${filteredProcs.length} of ${procs.length}`;
+            const tbody = document.getElementById('modal-proc-table-body');
+            
+            if (filteredProcs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No matching processes recorded.</td></tr>';
+            } else {
+                tbody.innerHTML = filteredProcs.map(p => {
+                    const stateClass = `state-${p.state || 'RUNNING'}`;
+                    const memStr = (p.memory_mb >= 1024) ? 
+                        `${(p.memory_mb / 1024).toFixed(1)} GB` : 
+                        `${p.memory_mb.toFixed(1)} MB`;
+                    const catClass = p.is_user_app ? 'cat-app' : 'cat-daemon';
+                    const catLabel = p.category || (p.is_user_app ? 'Application' : 'Background');
+
+                    return `
+                        <tr>
+                            <td>${p.pid}</td>
+                            <td>${p.ppid}</td>
+                            <td><strong>${p.name}</strong></td>
+                            <td>${p.user || 'system'}</td>
+                            <td><span class="cat-badge ${catClass}">${catLabel}</span></td>
+                            <td><span class="state-badge ${stateClass}">${p.state || 'ACTIVE'}</span></td>
+                            <td>${(p.cpu_percent || 0).toFixed(1)}%</td>
+                            <td>${memStr}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        function closeModal() {
+            activeModalNodeId = null;
+            document.getElementById('process-modal').classList.remove('active');
+        }
+
+        function closeModalOnOverlay(e) {
+            if (e.target.id === 'process-modal') {
+                closeModal();
+            }
+        }
+
+        async function toggleSimulationFleet() {
+            try {
+                const btn = document.getElementById('btn-toggle-sim');
+                btn.textContent = 'Working...';
+                const res = await fetch('/api/simulator/toggle', { method: 'POST' });
+                const json = await res.json();
+                btn.textContent = json.running ? '🛑 Stop Simulated Fleet' : '⚡ Toggle Simulated Fleet';
+                fetchFleetData();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Initialize polling
+        fetchServerStatus();
+        fetchFleetData();
+        setInterval(fetchFleetData, 3000);
+        setInterval(fetchServerStatus, 15000);
+    </script>
+</body>
+</html>

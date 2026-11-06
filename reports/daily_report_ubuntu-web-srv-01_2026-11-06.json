@@ -1,0 +1,22 @@
+{
+  "node_id": "ubuntu-web-srv-01 (192.168.1.101 (SIMULATED))",
+  "hostname": "ubuntu-web-srv-01",
+  "report_date": "2026-11-06",
+  "is_simulated": true,
+  "samples_collected": 9,
+  "uptime_percent": 100.0,
+  "alerts_count": 1,
+  "cpu": {
+    "avg": 40.5,
+    "max": 44.7
+  },
+  "ram": {
+    "avg": 45.4,
+    "max": 49.3
+  },
+  "disk": {
+    "avg": 27.6,
+    "max": 27.9
+  },
+  "generated_at": 1793957467.1559181
+}
